@@ -1,4 +1,4 @@
 # YAMLView-for-Chrome
 YAMLView for Chrome
 
-Amend functionality so that it displays YAML rather than JSON.
+Add additional scripts that process YAML rather than JSON.
