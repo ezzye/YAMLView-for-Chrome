@@ -1,11 +1,11 @@
 {
-  "name": "JSONView",
+  "name": "YAMLView",
   "icons": {
 	"16": "jsonview16.png",
 	"48": "jsonview48.png",
     "128": "jsonview128.png"},
   "version": "0.0.32.2",
-  "description": "Validate and view JSON documents",
+  "description": "Validate and view YAML documents",
   "options_page": "options.html",
   "background" : {
     "scripts": [
@@ -14,7 +14,7 @@
   },
   "content_scripts": [{
 	  "matches": ["http://*/*", "https://*/*", "ftp://*/*", "file:///*"],
-	  "js": ["content.js"],
+	  "js": ["yamljs.js","content2.js","content.js"],
 	  "run_at" : "document_end",
 	  "all_frames" : true
   }],
@@ -24,7 +24,8 @@
     "content_error.css",
     "options.png",
     "close_icon.gif",
-    "error.gif"
+    "error.gif",
+    "yamljs.js"
   ],
   "permissions" : ["clipboardWrite", "http://*/", "contextMenus", "https://*/", "ftp://*/"],
   "manifest_version": 2

@@ -1,0 +1,25 @@
+{
+  "name": "yamlview-for-chrome",
+  "version": "1.0.0",
+  "description": "YAML View Chrome Extension",
+  "main": "yamlview.test.js",
+  "scripts": {
+    "test": "test-yamlview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ezzye/YAMLView-for-Chrome.git"
+  },
+  "keywords": [
+    "YAML"
+  ],
+  "author": "Ez",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ezzye/YAMLView-for-Chrome/issues"
+  },
+  "homepage": "https://github.com/ezzye/YAMLView-for-Chrome#readme",
+  "devDependencies": {
+    "sinon-chrome": "^2.2.1"
+  }
+}

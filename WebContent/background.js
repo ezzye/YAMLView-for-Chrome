@@ -49,6 +49,10 @@ function refreshMenuEntry() {
 	}
 }
 
+
+/*
+ * 6. Listens to messages from content script
+ */
 function init() {
 	chrome.runtime.onConnect.addListener(function(port) {
 		port.onMessage.addListener(function(msg) {
@@ -56,6 +60,7 @@ function init() {
 
 			function onWorkerJSONLintMessage() {
 				var message = JSON.parse(event.data);
+				console.log(event.data);
 				workerJSONLint.removeEventListener("message", onWorkerJSONLintMessage, false);
 				workerJSONLint.terminate();
 				port.postMessage({
@@ -94,6 +99,7 @@ function init() {
 			}
 			if (msg.jsonToHTML) {
 				workerFormatter = new Worker("workerFormatter.js");
+				// send message to workerFormatter to make json to html
 				workerFormatter.addEventListener("message", onWorkerFormatterMessage, false);
 				workerFormatter.postMessage({
 					json : json,

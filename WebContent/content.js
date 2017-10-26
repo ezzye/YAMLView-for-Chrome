@@ -1,4 +1,12 @@
-var port = chrome.runtime.connect(), collapsers, options, jsonObject;
+/*
+ * port is chrome runtime to enbale access to chrome functions
+ * such as onMessage.addListener and postMessage.
+ * A message can contain any valid JSON object.
+ * runtime.connect opens a long lived connection.
+ * Note jsonObject's scope.
+ * see https://github.com/jeremyfa/yaml.js/blob/develop/src/Parser.coffee to convert yaml to javascript object
+ */
+var port = chrome.runtime.connect(), collapsers, options, jsonObject, nativeObject, yamlString ;
 
 function displayError(error, loc, offset) {
 	var link = document.createElement("link"), pre = document.body.firstChild.firstChild, text = pre.textContent.substring(offset), start = 0, ranges = [], idx = 0, end, range = document
@@ -39,48 +47,70 @@ function displayError(error, loc, offset) {
 	history.replaceState({}, "", "#");
 }
 
+
+/*
+ * 5. build display ui html
+ * top right toolbox and
+ * communicate ui interaction
+ */
 function displayUI(theme, html) {
 	var statusElement, toolboxElement, expandElement, reduceElement, viewSourceElement, optionsElement, content = "";
+	// stylesheets
 	content += '<link rel="stylesheet" type="text/css" href="' + chrome.runtime.getURL("jsonview-core.css") + '">';
 	content += "<style>" + theme + "</style>";
+	// add converted json to html
 	content += html;
+	// add content so far to DOM
 	document.body.innerHTML = content;
+	// selects node list where id=json or class is collapsible
 	collapsers = document.querySelectorAll("#json .collapsible .collapsible");
+	// make status element
 	statusElement = document.createElement("div");
 	statusElement.className = "status";
+	// make copy-path element
 	copyPathElement = document.createElement("div");
 	copyPathElement.className = "copy-path";
+	// add copy-path element to status element then add to body
 	statusElement.appendChild(copyPathElement);
 	document.body.appendChild(statusElement);
+	// make toolbox element
 	toolboxElement = document.createElement("div");
 	toolboxElement.className = "toolbox";
+	// make + sign expand all and - sign reduce all tool
 	expandElement = document.createElement("span");
 	expandElement.title = "expand all";
 	expandElement.innerText = "+";
 	reduceElement = document.createElement("span");
 	reduceElement.title = "reduce all";
 	reduceElement.innerText = "-";
+	// make view source link
 	viewSourceElement = document.createElement("a");
 	viewSourceElement.innerText = "View source";
 	viewSourceElement.target = "_blank";
 	viewSourceElement.href = "view-source:" + location.href;
+	// make options icon
 	optionsElement = document.createElement("img");
 	optionsElement.title = "options";
 	optionsElement.src = chrome.runtime.getURL("options.png");
+	// add toolbox elements to page
 	toolboxElement.appendChild(expandElement);
 	toolboxElement.appendChild(reduceElement);
 	toolboxElement.appendChild(viewSourceElement);
 	toolboxElement.appendChild(optionsElement);
 	document.body.appendChild(toolboxElement);
+	// add action functions for clicks and mouse overs
 	document.body.addEventListener('click', ontoggle, false);
 	document.body.addEventListener('mouseover', onmouseMove, false);
 	document.body.addEventListener('click', onmouseClick, false);
 	document.body.addEventListener('contextmenu', onContextMenu, false);
+	// change how nodes displayed
 	expandElement.addEventListener('click', onexpand, false);
 	reduceElement.addEventListener('click', onreduce, false);
+	// open options page
 	optionsElement.addEventListener("click", function() {
 		window.open(chrome.runtime.getURL("options.html"));
 	}, false);
+	//TODO: is this telling content script that page has been clicked?
 	copyPathElement.addEventListener("click", function() {
 		port.postMessage({
 			copyPropertyPath : true,
@@ -89,6 +119,13 @@ function displayUI(theme, html) {
 	}, false);
 }
 
+
+/*
+ * 2. trim text
+ * and test for starting with { or [ character
+ * and return object containing json text
+ */
+//TODO test for YAML instead of JSON
 function extractData(rawText) {
 	var tokens, text = rawText.trim();
 
@@ -101,6 +138,7 @@ function extractData(rawText) {
 			text : rawText,
 			offset : 0
 		};
+	//TODO what is a token?
 	tokens = text.match(/^([^\s\(]*)\s*\(([\s\S]*)\)\s*;?$/);
 	if (tokens && tokens[1] && tokens[2]) {
 		if (test(tokens[2].trim()))
@@ -112,6 +150,14 @@ function extractData(rawText) {
 	}
 }
 
+
+/*
+ * 4. Process text
+ * check that page is being viewed
+ * TODO what is options.safeMethod
+ * else format to html by converting to JSON saved in jsonObject
+ * and then sending message that jsonToHTML is true
+ */
 function processData(data) {
 	var xhr, jsonText;
 	
@@ -250,6 +296,13 @@ function onContextMenu() {
 	}
 }
 
+
+/*
+ * 3. Uses loaded text data to init
+ * uses observers pattern to listen to background msg
+ * and then either process data or display json
+ * also can respond to errors
+ */
 function init(data) {
 	port.onMessage.addListener(function(msg) {
 		if (msg.oninit) {
@@ -274,10 +327,18 @@ function init(data) {
 	});
 }
 
+/*
+ * 1. loads json from page, or does nothing,
+ * into child variable then
+ * uses extracts the text into variable data
+ * then starts init with this.
+ */
 function load() {
 	var child, data;
+
 	if (document.body && (document.body.childNodes[0] && document.body.childNodes[0].tagName == "PRE" || document.body.children.length == 0)) {
 		child = document.body.children.length ? document.body.childNodes[0] : document.body;
+		//runs if text is json data or stops
 		data = extractData(child.innerText);
 		if (data)
 			init(data);
