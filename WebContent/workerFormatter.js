@@ -85,6 +85,8 @@ addEventListener("message", function(event) {
 	var object;
 	try {
 		object = JSON.parse(event.data.json);
+		console.log("*****************************************");
+		console.log(object);
 	} catch (e) {
 		postMessage({
 			error : true

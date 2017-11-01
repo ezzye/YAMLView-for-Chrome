@@ -9,18 +9,18 @@
   "options_page": "options.html",
   "background" : {
     "scripts": [
-      "background.js"
+      "background2.js"
     ]
   },
   "content_scripts": [{
 	  "matches": ["http://*/*", "https://*/*", "ftp://*/*", "file:///*"],
-	  "js": ["yamljs.js","content2.js","content.js"],
+	  "js": ["yamljs.js","content2.js"],
 	  "run_at" : "document_end",
 	  "all_frames" : true
   }],
   "web_accessible_resources": [
-    "jsonview.css",
-    "jsonview-core.css",
+    "yamlview.css",
+    "yamlview-core.css",
     "content_error.css",
     "options.png",
     "close_icon.gif",
