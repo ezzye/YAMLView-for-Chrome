@@ -127,7 +127,7 @@ function extractData(rawText) {
 
     function test(text) {
         try {
-            yamlObject = YAML.parse(text);
+            yamljson = YAML.parse(text);
         } catch(e) {
             return false;
         }
@@ -136,7 +136,7 @@ function extractData(rawText) {
 
     if (test(text))
         return {
-            yamlObject : yamlObject,
+            yamlObject : yamljson,
         };
 }
 
@@ -150,6 +150,8 @@ function processData(data) {
     function formatToHTML() {
         if (!yamlObject)
             return;
+        console.log("you are here--> in process")
+        console.log(data);
         port.postMessage({
             yamlToHTML : true,
             yamlObject : yamlObject
@@ -279,7 +281,10 @@ function onContextMenu() {
  */
 function init(data) {
     port.onMessage.addListener(function(msg) {
+        console.log("********** YOU ARE HERE ******************");
         if (msg.oninit) {
+            console.log(msg);
+            console.log("Just being initalised");
             options = msg.options;
             processData(data);
         }
@@ -294,10 +299,14 @@ function init(data) {
         if (msg.ongetError) {
             displayError(msg.error, msg.loc);
         }
-    });
-    port.postMessage({
-        init : true
-    });
+        console.log("-----------No Message----------")
+    console.log(msg);
+});
+console.log("-----------Post Message----------")
+console.log(data);
+port.postMessage({
+    init : true
+});
 }
 
 /*
@@ -312,7 +321,7 @@ function load() {
     if (document.body && (document.body.childNodes[0] && document.body.childNodes[0].tagName == "PRE" || document.body.children.length == 0)) {
         child = document.body.children.length ? document.body.childNodes[0] : document.body;
         //runs if text is yaml or stops
-        data = extractData(child.innerText);
+        data = extractData(child.innerHTML);
         if (data)
             init(data);
     }

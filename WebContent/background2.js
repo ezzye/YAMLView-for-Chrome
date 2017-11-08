@@ -118,7 +118,7 @@ function init() {
 }
 
 var options = {};
-console.log("********** YOU ARE HERE ******************");
+
 
 if (localStorage.options)
     options = JSON.parse(localStorage.options);
