@@ -1,16 +1,7 @@
-/**
- * Created by ellioe03 on 26/10/2017.
- */
+var port = chrome.runtime.connect(), collapsers, options, jsonObject;
 
-var port = chrome.runtime.connect(),collapsers, options, yamlObject ;
-
-
-/*
- * 6. Display web page error page
- * with location of error
- */
-function displayError(error, loc) {
-    var link = document.createElement("link"), pre = document.body.firstChild.firstChild, text = pre.textContent, start = 0, ranges = [], idx = 0, end, range = document
+function displayError(error, loc, offset) {
+    var link = document.createElement("link"), pre = document.body.firstChild.firstChild, text = pre.textContent.substring(offset), start = 0, ranges = [], idx = 0, end, range = document
         .createRange(), imgError = document.createElement("img"), content = document.createElement("div"), errorPosition = document.createElement("span"), container = document
         .createElement("div"), closeButton = document.createElement("div");
     link.rel = "stylesheet";
@@ -22,8 +13,8 @@ function displayError(error, loc) {
         ranges.push(start);
         start = idx + 1;
     }
-    start = ranges[loc.first_line - 1] + loc.first_column;
-    end = ranges[loc.last_line - 1] + loc.last_column;
+    start = ranges[loc.first_line - 1] + loc.first_column + offset;
+    end = ranges[loc.last_line - 1] + loc.last_column + offset;
     range.setStart(pre, start);
     if (start == end - 1)
         range.setEnd(pre, start);
@@ -48,63 +39,48 @@ function displayError(error, loc) {
     history.replaceState({}, "", "#");
 }
 
-
-/*
- * 5. Display web page with yaml as html
- * by adding object with div elements
- */
 function displayUI(theme, html) {
     var statusElement, toolboxElement, expandElement, reduceElement, viewSourceElement, optionsElement, content = "";
-    // stylesheets
-    content += '<link rel="stylesheet" type="text/css" href="' + chrome.runtime.getURL("yamlview-core.css") + '">';
+    content += '<link rel="stylesheet" type="text/css" href="' + chrome.runtime.getURL("jsonview-core.css") + '">';
     content += "<style>" + theme + "</style>";
-    // add converted json to html
     content += html;
-    // add content so far to DOM
     document.body.innerHTML = content;
-    // selects node list where id=yaml or class is collapsible
-    collapsers = document.querySelectorAll("#yaml .collapsible .collapsible");
-    // make status element
+    collapsers = document.querySelectorAll("#json .collapsible .collapsible");
     statusElement = document.createElement("div");
     statusElement.className = "status";
-    // make copy-path element
     copyPathElement = document.createElement("div");
     copyPathElement.className = "copy-path";
-    // add copy-path element to status element then add to body
     statusElement.appendChild(copyPathElement);
     document.body.appendChild(statusElement);
-    // make toolbox element
     toolboxElement = document.createElement("div");
     toolboxElement.className = "toolbox";
-    // make + sign expand all and - sign reduce all tool
     expandElement = document.createElement("span");
     expandElement.title = "expand all";
     expandElement.innerText = "+";
     reduceElement = document.createElement("span");
     reduceElement.title = "reduce all";
     reduceElement.innerText = "-";
-    // make options icon
+    viewSourceElement = document.createElement("a");
+    viewSourceElement.innerText = "View source";
+    viewSourceElement.target = "_blank";
+    viewSourceElement.href = "view-source:" + location.href;
     optionsElement = document.createElement("img");
     optionsElement.title = "options";
     optionsElement.src = chrome.runtime.getURL("options.png");
-    // add toolbox elements to page
     toolboxElement.appendChild(expandElement);
     toolboxElement.appendChild(reduceElement);
+    toolboxElement.appendChild(viewSourceElement);
     toolboxElement.appendChild(optionsElement);
     document.body.appendChild(toolboxElement);
-    // add action functions for clicks and mouse overs
     document.body.addEventListener('click', ontoggle, false);
     document.body.addEventListener('mouseover', onmouseMove, false);
     document.body.addEventListener('click', onmouseClick, false);
     document.body.addEventListener('contextmenu', onContextMenu, false);
-    // change how nodes displayed
     expandElement.addEventListener('click', onexpand, false);
     reduceElement.addEventListener('click', onreduce, false);
-    // open options page
     optionsElement.addEventListener("click", function() {
         window.open(chrome.runtime.getURL("options.html"));
     }, false);
-    // broadcast copy path
     copyPathElement.addEventListener("click", function() {
         port.postMessage({
             copyPropertyPath : true,
@@ -113,62 +89,79 @@ function displayUI(theme, html) {
     }, false);
 }
 
-
-
-
-/*
- * 2. Extract extracts yaml from text;
- * then tests text using yaml parser,
- * if it is yaml save yaml object to global variable,
- * if not return nothing
- */
 function extractData(rawText) {
-    var text = rawText.trim();
-
-    function test(text) {
+    var tokens, text = rawText.trim();
+    function textToYAML(test) {
         try {
-            yamljson = YAML.parse(text);
-        } catch(e) {
-            return false;
+            text = YAML.parse(test);
         }
-        return true;
+        catch(err) {
+            return "error";
+        }
+        return text;
     }
 
+    function test(text) {
+        return ((text.charAt(0) == "[" && text.charAt(text.length - 1) == "]") || (text.charAt(0) == "{" && text.charAt(text.length - 1) == "}"));
+    }
+
+    text = textToYAML(text);
+    text = JSON.stringify(text, null, 2);
     if (test(text))
         return {
-            yamlObject : yamljson,
+            text: text,
+            offset: 0
         };
+    tokens = text.match(/^([^\s\(]*)\s*\(([\s\S]*)\)\s*;?$/);
+    if (tokens && tokens[1] && tokens[2]) {
+        if (test(tokens[2].trim()))
+            return {
+                fnName: tokens[1],
+                text: tokens[2],
+                offset: rawText.indexOf(tokens[2])
+            };
+    }
 }
 
-
-/*
- * 4. Process data
- * Notifies backend to convert yaml object to html
- */
 function processData(data) {
-    var yamlObject;
-    function formatToHTML() {
-        if (!yamlObject)
+    var xhr, jsonText;
+
+    function formatToHTML(fnName, offset) {
+        if (!jsonText)
             return;
-        console.log("you are here--> in process")
-        console.log(data);
+
         port.postMessage({
-            yamlToHTML : true,
-            yamlObject : yamlObject
+            jsonToHTML : true,
+            json : jsonText,
+            fnName : fnName,
+            offset : offset
         });
+        try {
+            jsonObject = JSON.parse(jsonText);
+        } catch (e) {
+        }
     }
 
     if (window == top || options.injectInFrame)
-        if (data) {
-        yamlObject = data.yamlObject;
-            formatToHTML(yamlObject);
+        if (options.safeMethod) {
+            xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    data = extractData(this.responseText);
+                    if (data) {
+                        jsonText = data.text;
+                        formatToHTML(data.fnName, data.offset);
+                    }
+                }
+            };
+            xhr.open("GET", document.location.href, true);
+            xhr.send(null);
+        } else if (data) {
+            jsonText = data.text;
+            formatToHTML(data.fnName, data.offset);
         }
 }
 
-
-/*
- * 4. GUI functions
- */
 function ontoggle(event) {
     var collapsed, target = event.target;
     if (event.target.className == 'collapser') {
@@ -269,61 +262,40 @@ function onContextMenu() {
     }
 }
 
-
-
-/*
- * 3. Init listens to notifications from background and webworkers
- * three main notifications:
- *  onInit -  it processes data to html object by calling process data method;
- *  onyamlToHTML - displays page with yaml, if no html it displays error;
- *  ongetError - displays an error.
- * Then notifies backend that init done
- */
 function init(data) {
     port.onMessage.addListener(function(msg) {
-        console.log("********** YOU ARE HERE ******************");
         if (msg.oninit) {
-            console.log(msg);
-            console.log("Just being initalised");
             options = msg.options;
             processData(data);
         }
-        if (msg.onjsonToHTML)
+        if (msg.onjsonToHTML) {
             if (msg.html) {
                 displayUI(msg.theme, msg.html);
-            } else if (msg.yaml)
+            } else if (msg.json) {
                 port.postMessage({
-                    getError : true,
-                    yaml : yaml
-                });
-        if (msg.ongetError) {
-            displayError(msg.error, msg.loc);
+                    getError: true,
+                    json: msg.json,
+                    fnName: msg.fnName
+                })
+            }
         }
-        console.log("-----------No Message----------")
-    console.log(msg);
-});
-console.log("-----------Post Message----------")
-console.log(data);
-port.postMessage({
-    init : true
-});
+        if (msg.ongetError) {
+            displayError(msg.error, msg.loc, msg.offset);
+        }
+    });
+    port.postMessage({
+        init : true
+    });
 }
 
-/*
- * 1. Load content from page
- * test if yaml, if not do nothing.
- * extract yaml into yamlobject
- * then pass this data object to init()
- */
 function load() {
     var child, data;
-
     if (document.body && (document.body.childNodes[0] && document.body.childNodes[0].tagName == "PRE" || document.body.children.length == 0)) {
         child = document.body.children.length ? document.body.childNodes[0] : document.body;
-        //runs if text is yaml or stops
         data = extractData(child.innerHTML);
-        if (data)
+        if (data) {
             init(data);
+        }
     }
 }
 

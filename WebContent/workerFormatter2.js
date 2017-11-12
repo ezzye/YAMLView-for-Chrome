@@ -1,15 +1,7 @@
-// Web worker back end observer.
-
-/*
- * 1. Functions to convert yaml object into html
- */
-
 /**
  * Adapted the code in to order to run in a web worker.
  *
  * Original author: Benjamin Hollis
- *
- * This code converts object into html
  */
 
 function htmlEncode(t) {
@@ -41,12 +33,12 @@ function valueToHTML(value) {
     return output;
 }
 
-function arrayToHTML(yaml) {
+function arrayToHTML(json) {
     var i, length, output = '<div class="collapser"></div>[<span class="ellipsis"></span><ul class="array collapsible">', hasContents = false;
-    for (i = 0, length = yaml.length; i < length; i++) {
+    for (i = 0, length = json.length; i < length; i++) {
         hasContents = true;
         output += '<li><div class="hoverable">';
-        output += valueToHTML(yaml[i]);
+        output += valueToHTML(json[i]);
         if (i < length - 1)
             output += ',';
         output += '</div></li>';
@@ -57,14 +49,14 @@ function arrayToHTML(yaml) {
     return output;
 }
 
-function objectToHTML(yaml) {
-    var i, key, length, keys = Object.keys(yaml), output = '<div class="collapser"></div>{<span class="ellipsis"></span><ul class="obj collapsible">', hasContents = false;
+function objectToHTML(json) {
+    var i, key, length, keys = Object.keys(json), output = '<div class="collapser"></div>{<span class="ellipsis"></span><ul class="obj collapsible">', hasContents = false;
     for (i = 0, length = keys.length; i < length; i++) {
         key = keys[i];
         hasContents = true;
         output += '<li><div class="hoverable">';
         output += '<span class="property">' + htmlEncode(key) + '</span>: ';
-        output += valueToHTML(yaml[key]);
+        output += valueToHTML(json[key]);
         if (i < length - 1)
             output += ',';
         output += '</div></li>';
@@ -75,12 +67,12 @@ function objectToHTML(yaml) {
     return output;
 }
 
-function yamlToHTML(yaml, fnName) {
+function jsonToHTML(json, fnName) {
     var output = '';
     if (fnName)
         output += '<div class="callback-function">' + fnName + '(</div>';
-    output += '<div id="yaml">';
-    output += valueToHTML(yaml);
+    output += '<div id="json">';
+    output += valueToHTML(json);
     output += '</div>';
     if (fnName)
         output += '<div class="callback-function">)</div>';
@@ -90,7 +82,7 @@ function yamlToHTML(yaml, fnName) {
 addEventListener("message", function(event) {
     var object;
     try {
-        object = JSON.parse(event.data.yaml);
+        object = JSON.parse(event.data.json);
     } catch (e) {
         postMessage({
             error : true
@@ -98,7 +90,7 @@ addEventListener("message", function(event) {
         return;
     }
     postMessage({
-        onyamlToHTML : true,
-        html : yamlToHTML(object, event.data.fnName)
+        onjsonToHTML : true,
+        html : jsonToHTML(object, event.data.fnName)
     });
 }, false);

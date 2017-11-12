@@ -1,6 +1,3 @@
-// Back end observer.
-
-
 var path, value, copyPathMenuEntryId, copyValueMenuEntryId;
 
 function getDefaultTheme(callback) {
@@ -9,7 +6,7 @@ function getDefaultTheme(callback) {
         if (xhr.readyState == 4)
             callback(xhr.responseText);
     };
-    xhr.open("GET", "yamlview.css", true);
+    xhr.open("GET", "jsonview.css", true);
     xhr.send(null);
 }
 
@@ -52,22 +49,13 @@ function refreshMenuEntry() {
     }
 }
 
-
-/*
- * 1. Init listens for notifications from content and web worker scripts
- * Three types of notification:
- *  init - broadcast options;
- *  yamlToHTML - create new web worker and then broadcast yaml to parse into html
- * Then refresh menu
- */
 function init() {
     chrome.runtime.onConnect.addListener(function(port) {
         port.onMessage.addListener(function(msg) {
-            var workerFormatter, workerJSONLint, yaml = msg.yaml;
+            var workerFormatter, workerJSONLint, json = msg.json;
 
             function onWorkerJSONLintMessage() {
                 var message = JSON.parse(event.data);
-                console.log(event.data);
                 workerJSONLint.removeEventListener("message", onWorkerJSONLintMessage, false);
                 workerJSONLint.terminate();
                 port.postMessage({
@@ -84,14 +72,14 @@ function init() {
                 workerFormatter.terminate();
                 if (message.html)
                     port.postMessage({
-                        onyamlToHTML : true,
+                        onjsonToHTML : true,
                         html : message.html,
                         theme : localStorage.theme
                     });
                 if (message.error) {
                     workerJSONLint = new Worker("workerJSONLint.js");
                     workerJSONLint.addEventListener("message", onWorkerJSONLintMessage, false);
-                    workerJSONLint.postMessage(yaml);
+                    workerJSONLint.postMessage(json);
                 }
             }
 
@@ -104,12 +92,12 @@ function init() {
                 path = msg.path;
                 value = msg.value;
             }
-            if (msg.yamlToHTML) {
-                workerFormatter = new Worker("workerFormatter2.js");
-                // send message to workerFormatter to make yaml to html
+            if (msg.jsonToHTML) {
+                workerFormatter = new Worker("workerFormatter.js");
                 workerFormatter.addEventListener("message", onWorkerFormatterMessage, false);
                 workerFormatter.postMessage({
-                    yaml : yaml
+                    json : json,
+                    fnName : msg.fnName
                 });
             }
         });
@@ -118,8 +106,6 @@ function init() {
 }
 
 var options = {};
-
-
 if (localStorage.options)
     options = JSON.parse(localStorage.options);
 if (typeof options.addContextMenu == "undefined") {

@@ -20,9 +20,15 @@ sinon.assert.expose(assert);
 global.assert = assert;
 sinon.assert.expose(global.assert, {prefix: ''});
 
+var spy = sinon.spy();
+var ChromeEvent = require('sinon-chrome/events');
+var fakePort = {
+    onMessage: new ChromeEvent(),
+    postMessage: spy
+};
+var port = fakePort;
 
-describe('YAML page ', function() {
-
+describe('load a YAML page \n', function() {
     var window;
     var rawtext = fs.readFileSync('fixture/example.yml', 'utf-8');
 
@@ -30,7 +36,6 @@ describe('YAML page ', function() {
         jsdom.env({
             // generated background page
             file: "fixture/example.yml",
-            //TODO check url - js source
             src: [
                 fs.readFileSync('WebContent/yamljs.js', 'utf-8'),
                 fs.readFileSync('WebContent/content2.js', 'utf-8')
@@ -56,6 +61,8 @@ describe('YAML page ', function() {
                 }
             }
         });
+        chrome.runtime.connect.returns(port);
+        chrome.runtime.getURL.returns("jsonview-core.css");
     });
 
     afterEach(function() {
@@ -63,51 +70,89 @@ describe('YAML page ', function() {
         window.close();
     });
 
-    it('Should print out setup OK', function() {
-
+    it('Should load a yaml file', function() {
         //load url test
-
-        console.log("\n");
-        console.log("Set up OK. This is the loaded document:");
-        console.log(window.document.getElementsByTagName("BODY")[0].innerHTML);
-        console.log("\n");
+        var expected = "this: is\na:\n    - YAML\n    - example";
+        console.log(expected);
+        assert.equal(window.document.getElementsByTagName("BODY")[0].innerHTML,expected);
+        assert.equal(window.document.body.innerHTML,expected);
     });
 
-    it('YAML function should create a yaml javascript object', function() {
 
-
-        // test YAML function
-        var yamlObject = window.YAML.parse(rawtext);
-
-        console.log("This is yaml raw text:");
-        console.log(rawtext);
-        console.log("\n");
-        console.log("This is yaml javascript object:");
-        console.log(yamlObject );
-
-        assert.equal(yamlObject.this,'is');
-        assert.equal(yamlObject.a[0],'YAML');
-        assert.equal(yamlObject.a[1],'example');
-
-    });
-
-    it('extractData should yamlObject', function() {
-
+    it('extractData should transform yaml to json text', function() {
         //test extractData
         var dataObject = window.extractData(rawtext);
-
-
-        console.log("\n");
-        console.log("This is the rawtext:");
-        console.log(rawtext);
-        console.log("This is the loaded yamlobject: \n", dataObject);
-
-        assert.equal(dataObject.yamlObject.this,'is');
-        assert.equal(dataObject.yamlObject.a[0],'YAML');
-        assert.equal(dataObject.yamlObject.a[1],'example');
+        var text = fs.readFileSync('fixture/example.json', 'utf-8');
+        assert.equal(dataObject.text,text);
+        console.log(dataObject);
     })
 
 
+    it('should create toolbox page', function () {
+        var theme = "";
+        var html = "<title>This is a Test</title></title>"
+        window.displayUI(theme,html);
+        var expected = fs.readFileSync('fixture/body_toolbox.txt', 'utf-8');
+        console.log(expected);
+        assert.equal(window.document.getElementsByTagName("BODY")[0].innerHTML,expected);
+    });
+});
+
+
+describe('load a JSON page ', function() {
+
+    var window;
+    var yamlObject = { };
+    var rawtext = fs.readFileSync('fixture/example.json', 'utf-8');
+
+    beforeEach(function(done) {
+        jsdom.env({
+            // generated background page
+            file: "fixture/example.json",
+            src: [
+                fs.readFileSync('WebContent/yamljs.js', 'utf-8'),
+                fs.readFileSync('WebContent/content2.js', 'utf-8')
+            ],
+            created: function(errors, wnd) {
+                //attach chrome to window
+                wnd.chrome = chrome;
+                wnd.console = console;
+                //report errors
+                if (errors) {
+                    console.log(errors);
+                    return done(true);
+                }
+            },
+            done: function (errors,wnd) {
+                if (errors) {
+                    console.log(errors);
+                    done(true);
+                } else {
+                    window = wnd;
+                    done();
+                }
+            }
+        });
+        chrome.runtime.connect.returns(port);
+    });
+
+    afterEach(function() {
+        chrome.reset();
+        window.close();
+    });
+
+    it('Should load a JSON file \n', function() {
+        console.log(window.document.getElementsByTagName("BODY")[0].innerHTML);
+        assert.equal(window.document.getElementsByTagName("BODY")[0].innerHTML, rawtext);
+    });
+
+
+    it('extractData should exit if file not YAML', function() {
+        //test extractData
+        var dataObject = window.extractData(rawtext);
+        var text = "{\n    \"this\": \"is\",\n    \"a\": [\n        \"YAML\",\n        \"example\"\n    ]\n}";
+        assert.equal(dataObject, null);
+    })
 });
 
 

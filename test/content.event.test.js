@@ -20,21 +20,15 @@ sinon.assert.expose(assert);
 global.assert = assert;
 sinon.assert.expose(global.assert, {prefix: ''});
 
-var ChromeEvent = require('sinon-chrome/events');
-var fakePort = {
-    onMessage: new ChromeEvent(),
-    postMessage: sinon.spy()
-};
-
-var port = fakePort;
-
-var yamlObject = { this: 'is', a: [ 'YAML', 'example' ] };
-
-
-describe('YAML page ', function() {
-
+describe('YAML page ready to make html', function() {
     var window;
-    var rawtext = fs.readFileSync('fixture/example.yml', 'utf-8');
+    var spy = sinon.spy();
+    var ChromeEvent = require('sinon-chrome/events');
+    var fakePort = {
+        onMessage: new ChromeEvent(),
+        postMessage: spy
+    };
+    var port = fakePort;
 
     beforeEach(function(done) {
         jsdom.env({
@@ -46,6 +40,9 @@ describe('YAML page ', function() {
             ],
             created: function(errors, wnd) {
                 //attach chrome to window
+
+                chrome.runtime.getURL.returns("jsonview-core.css");
+                chrome.runtime.connect.returns(port);
                 wnd.chrome = chrome;
                 wnd.console = console;
                 //report errors
@@ -61,29 +58,228 @@ describe('YAML page ', function() {
                 } else {
                     window = wnd;
                     done();
-
                 }
             }
         });
-        chrome.runtime.connect.returns(port);
+    });
+    afterEach(function() {
+        chrome.reset();
+        spy.reset();
+        window.close();
+    });
+
+    it('should listen for onjsonToHTML and  html----> do displayUI', function () {
+        // run you content script
+        var html = "<title>This is a Test</title></title>"
+        var theme = "";
+
+        // See state test
+        var expected = fs.readFileSync('fixture/body_toolbox.txt', 'utf-8');
+
+        port.onMessage.trigger({
+            onjsonToHTML: 1,
+            html: html,
+            theme: theme
+        });
+
+        console.log(window.document.getElementsByTagName("BODY")[0].innerHTML);
+        assert.equal(window.document.getElementsByTagName("BODY")[0].innerHTML, expected);
+    });
+});
+
+
+describe('YAML page ready for json', function() {
+
+    var window;
+    var spy = sinon.spy();
+    var ChromeEvent = require('sinon-chrome/events');
+    var fakePort = {
+        onMessage: new ChromeEvent(),
+        postMessage: spy
+    };
+    var port = fakePort;
+
+    beforeEach(function(done) {
+        jsdom.env({
+            // generated background page
+            file: "fixture/example.yml",
+            src: [
+                fs.readFileSync('WebContent/yamljs.js', 'utf-8'),
+                fs.readFileSync('WebContent/content2.js', 'utf-8')
+            ],
+            created: function(errors, wnd) {
+                //attach chrome to window
+                chrome.runtime.getURL.returns("jsonview-core.css");
+                chrome.runtime.connect.returns(port);
+                wnd.chrome = chrome;
+                wnd.console = console;
+
+                //report errors
+                if (errors) {
+                    console.log(errors);
+                    return done(true);
+                }
+            },
+            done: function (errors,wnd) {
+                if (errors) {
+                    console.log(errors);
+                    done(true);
+                } else {
+                    window = wnd;
+                    done();
+                }
+            }
+        });
     });
 
     afterEach(function() {
         chrome.reset();
+        spy.reset();
         window.close();
     });
 
 
-    it('should listen for oninit ----> post yamlToHTML with yamlObject', function () {
+    it('should listen for oninit ----> post jsonToHTML with jsontext to process data', function () {
         // run you content script
-        port.onMessage.trigger({oninit: 1});
+        var jsonText = fs.readFileSync('fixture/example.json', 'utf-8');
+        var fnName;
+        var offset = 0;
+        var localStorage = {};
+
+        port.onMessage.trigger({
+            oninit: 1,
+            options : localStorage.options ? JSON.parse(localStorage.options) : {}
+        });
+        // console.log(jsonText);
         assert.calledOnce(port.postMessage.withArgs({
-            yamlToHTML : true,
-            yamlObject : yamlObject
+            jsonToHTML : true,
+            json : jsonText,
+            fnName : fnName,
+            offset : offset
         }));
     });
+});
 
+describe('YAML page json htm mismatch', function() {
+    var window;
+    var spy = sinon.spy();
+    var ChromeEvent = require('sinon-chrome/events');
+    var fakePort = {
+        onMessage: new ChromeEvent(),
+        postMessage: spy
+    };
+    var port = fakePort;
 
+    beforeEach(function(done) {
+        jsdom.env({
+            // generated background page
+            file: "fixture/example.yml",
+            src: [
+                fs.readFileSync('WebContent/yamljs.js', 'utf-8'),
+                fs.readFileSync('WebContent/content2.js', 'utf-8')
+            ],
+            created: function(errors, wnd) {
+                //attach chrome to window
+                chrome.runtime.getURL.returns("jsonview-core.css");
+                chrome.runtime.connect.returns(port);
+                wnd.chrome = chrome;
+                wnd.console = console;
+
+                //report errors
+                if (errors) {
+                    console.log(errors);
+                    return done(true);
+                }
+            },
+            done: function (errors,wnd) {
+                if (errors) {
+                    console.log(errors);
+                    done(true);
+                } else {
+                    window = wnd;
+                    done();
+                }
+            }
+        });
+    });
+
+    afterEach(function() {
+        chrome.reset();
+        spy.reset();
+        window.close();
+    });
+
+    it('should listen for onjsonToHTML and  json----> post getError with json', function () {
+        // run you content script
+        var jsonText = fs.readFileSync('fixture/example.json', 'utf-8');
+        var fnName;
+
+        port.onMessage.trigger({
+            onjsonToHTML: 1,
+            json: jsonText
+        });
+        assert.calledOnce(port.postMessage.withArgs({
+            getError : true,
+            json : jsonText,
+            fnName : fnName
+        }));
+    });
+});
+
+describe('YAML page ready init done', function() {
+    var window;
+    var spy = sinon.spy();
+    var ChromeEvent = require('sinon-chrome/events');
+    var fakePort = {
+        onMessage: new ChromeEvent(),
+        postMessage: spy
+    };
+    var port = fakePort;
+
+    beforeEach(function(done) {
+        jsdom.env({
+            // generated background page
+            file: "fixture/example.yml",
+            src: [
+                fs.readFileSync('WebContent/yamljs.js', 'utf-8'),
+                fs.readFileSync('WebContent/content2.js', 'utf-8')
+            ],
+            created: function(errors, wnd) {
+                //attach chrome to window
+                chrome.runtime.getURL.returns("jsonview-core.css");
+                chrome.runtime.connect.returns(port);
+                wnd.chrome = chrome;
+                wnd.console = console;
+
+                //report errors
+                if (errors) {
+                    console.log(errors);
+                    return done(true);
+                }
+            },
+            done: function (errors,wnd) {
+                if (errors) {
+                    console.log(errors);
+                    done(true);
+                } else {
+                    window = wnd;
+                    done();
+                }
+            }
+        });
+    });
+
+    afterEach(function() {
+        chrome.reset();
+        spy.reset();
+        window.close();
+    });
+
+    it('should init data ----> post init to initialise page', function () {
+        assert.calledOnce(port.postMessage.withArgs({
+            init : true
+        }));
+    });
 });
 
 
