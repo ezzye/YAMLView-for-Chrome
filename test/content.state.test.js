@@ -73,7 +73,6 @@ describe('load a YAML page \n', function() {
     it('Should load a yaml file', function() {
         //load url test
         var expected = "this: is\na:\n    - YAML\n    - example";
-        console.log(expected);
         assert.equal(window.document.getElementsByTagName("BODY")[0].innerHTML,expected);
         assert.equal(window.document.body.innerHTML,expected);
     });
@@ -84,7 +83,6 @@ describe('load a YAML page \n', function() {
         var dataObject = window.extractData(rawtext);
         var text = fs.readFileSync('fixture/example.json', 'utf-8');
         assert.equal(dataObject.text,text);
-        console.log(dataObject);
     })
 
 
@@ -93,7 +91,6 @@ describe('load a YAML page \n', function() {
         var html = "<title>This is a Test</title></title>"
         window.displayUI(theme,html);
         var expected = fs.readFileSync('fixture/body_toolbox.txt', 'utf-8');
-        console.log(expected);
         assert.equal(window.document.getElementsByTagName("BODY")[0].innerHTML,expected);
     });
 });
@@ -142,7 +139,6 @@ describe('load a JSON page ', function() {
     });
 
     it('Should load a JSON file \n', function() {
-        console.log(window.document.getElementsByTagName("BODY")[0].innerHTML);
         assert.equal(window.document.getElementsByTagName("BODY")[0].innerHTML, rawtext);
     });
 

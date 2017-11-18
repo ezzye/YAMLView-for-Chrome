@@ -14,7 +14,7 @@ var sinon = require('sinon');
 var chrome = require('sinon-chrome');
 var jsdom = require ('jsdom/lib/old-api.js');
 var assert = require('chai').assert;
-var ChromeEvent = require('sinon-chrome/events');
+// var ChromeEvent = require('sinon-chrome/events');
 
 sinon.assert.expose(assert);
 global.assert = assert;
@@ -82,7 +82,6 @@ describe('YAML page ready to make html', function() {
             theme: theme
         });
 
-        console.log(window.document.getElementsByTagName("BODY")[0].innerHTML);
         assert.equal(window.document.getElementsByTagName("BODY")[0].innerHTML, expected);
     });
 });
@@ -150,7 +149,6 @@ describe('YAML page ready for json', function() {
             oninit: 1,
             options : localStorage.options ? JSON.parse(localStorage.options) : {}
         });
-        // console.log(jsonText);
         assert.calledOnce(port.postMessage.withArgs({
             jsonToHTML : true,
             json : jsonText,

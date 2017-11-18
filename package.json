@@ -22,6 +22,8 @@
     "test-navigate": "mocha --compilers js:babel-register test/navigate.test.js",
     "test-state-content": "mocha --compilers js:babel-register test/content.state.test.js",
     "test-event-content": "mocha --compilers js:babel-register test/content.event.test.js",
+    "test-background-event": "mocha --compilers js:babel-register test/background.event.test.js",
+    "test": "run-s test-state-content test-event-content test-background-event",
     "test-events": "mocha --compilers js:babel-register test/events.test.js",
     "test-then": "mocha --compilers js:babel-register test/then-chrome.test.js",
     "transpile": "babel ./WebContent --out-dir ./out",
@@ -52,6 +54,7 @@
     "mocha": "^3.1.0",
     "mocha-lcov-reporter": "^1.2.0",
     "mocha-tldr-reporter": "^1.0.0",
+    "npm-run-all": "^4.1.2",
     "sinon-chrome": "^2.2.1",
     "webpack": "^1.13.2"
   }
