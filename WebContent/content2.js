@@ -138,7 +138,7 @@ function processData(data) {
         });
         try {
             jsonObject = JSON.parse(jsonText);
-        } catch (e) {
+            } catch (e) {
         }
     }
 

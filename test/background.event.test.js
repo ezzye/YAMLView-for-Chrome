@@ -101,8 +101,7 @@ describe('YAML page background events', function() {
 
 
 
-        window.port = port;
-        window.init();
+        window.doinit(port);
 
         port.onMessage.trigger({
             init: true,
@@ -116,8 +115,7 @@ describe('YAML page background events', function() {
 
     it('should listen for copyPropertyPath and set path and value it  ', function () {
 
-        window.port = port;
-        window.init();
+        window.doinit(port);
 
         port.onMessage.trigger({
             copyPropertyPath: true,
@@ -131,8 +129,8 @@ describe('YAML page background events', function() {
 
     it('should listen for jsonToHTML and broadcast json message as json linted ', function () {
 
-        window.port = port;
-        window.init();
+        window.doinit(port);
+
         window.workerJSONLint;
 
         var localStorage = {

@@ -2,7 +2,7 @@
  * Created by ellioe03 on 26/10/2017.
  */
 
-var port = chrome.runtime.connect(),collapsers, options, yamlObject ;
+var port = chrome.runtime.connect(),collapsers, options, jsonObject ;
 
 
 /*
@@ -127,7 +127,7 @@ function extractData(rawText) {
 
     function test(text) {
         try {
-            yamlObject = YAML.parse(text);
+            jsonObject = YAML.parse(text);
         } catch(e) {
             return false;
         }
@@ -136,7 +136,7 @@ function extractData(rawText) {
 
     if (test(text))
         return {
-            yamlObject : yamlObject,
+            jsonObject : jsonObject,
         };
 }
 
@@ -146,20 +146,20 @@ function extractData(rawText) {
  * Notifies backend to convert yaml object to html
  */
 function processData(data) {
-    var yamlObject;
+    var jsonObject;
     function formatToHTML() {
-        if (!yamlObject)
+        if (!jsonObject)
             return;
         port.postMessage({
             yamlToHTML : true,
-            yamlObject : yamlObject
+            jsonObject : jsonObject
         });
     }
 
     if (window == top || options.injectInFrame)
         if (data) {
-        yamlObject = data.yamlObject;
-            formatToHTML(yamlObject);
+        jsonObject = data.jsonObject;
+            formatToHTML(jsonObject);
         }
 }
 
@@ -303,7 +303,7 @@ function init(data) {
 /*
  * 1. Load content from page
  * test if yaml, if not do nothing.
- * extract yaml into yamlobject
+ * extract yaml into jsonObject
  * then pass this data object to init()
  */
 function load() {

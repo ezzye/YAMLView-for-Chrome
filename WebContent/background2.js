@@ -95,7 +95,7 @@ function doinit(port) {
             value = msg.value;
         }
         if (msg.jsonToHTML) {
-            workerFormatter = new Worker("workerFormatter.js");
+            workerFormatter = new Worker("workerFormatter2.js");
             workerFormatter.addEventListener("message", onWorkerFormatterMessage, false);
             workerFormatter.postMessage({
                 json : json,
@@ -104,9 +104,9 @@ function doinit(port) {
         }
     });
 }
-
+;
 function init() {
-    chrome.runtime.onConnect.addListener(doinit(port));
+    chrome.runtime.onConnect.addListener(doinit);
     refreshMenuEntry();
 }
 

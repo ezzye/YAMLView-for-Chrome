@@ -2,6 +2,8 @@
  * Adapted the code in to order to run in a web worker.
  *
  * Original author: Benjamin Hollis
+ *
+ * This code converts object into html
  */
 
 function htmlEncode(t) {
