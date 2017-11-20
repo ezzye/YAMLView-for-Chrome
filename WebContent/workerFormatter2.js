@@ -15,7 +15,7 @@ function decorateWithSpan(value, className) {
 function valueToHTML(value) {
     var valueType = typeof value, output = "";
     if (value == null)
-        output += decorateWithSpan("null", "type-null");
+        output += decorateWithSpan(null, "type-null");
     else if (value && value.constructor == Array)
         output += arrayToHTML(value);
     else if (valueType == "object")
@@ -78,7 +78,6 @@ function jsonToHTML(json, fnName) {
         output += '<div class="callback-function">)</div>';
     return output;
 }
-
 addEventListener("message", function(event) {
     var object;
     try {
