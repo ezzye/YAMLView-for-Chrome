@@ -13,20 +13,20 @@
     ]
   },
   "content_scripts": [{
-	  "matches": ["http://*/*", "https://*/*", "ftp://*/*", "file:///*"],
+	  "matches": ["http://*/*", "https://*/*", "ftp://*/*", "file:///*/*"],
 	  "js": ["yamljs.js","content2.js"],
 	  "run_at" : "document_end",
 	  "all_frames" : true
   }],
   "web_accessible_resources": [
-    "yamlview.css",
-    "yamlview-core.css",
+    "jsonview.css",
+    "jsonview-core.css",
     "content_error.css",
     "options.png",
     "close_icon.gif",
     "error.gif",
     "yamljs.js"
   ],
-  "permissions" : ["clipboardWrite", "http://*/", "contextMenus", "https://*/", "ftp://*/"],
+  "permissions" : ["clipboardWrite", "http://*/", "contextMenus", "https://*/", "ftp://*/", "file:///*/"],
   "manifest_version": 2
 }
