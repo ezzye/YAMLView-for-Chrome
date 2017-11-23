@@ -184,24 +184,44 @@ describe('WebWorker that formats html', function() {
         assert.equal(htmlArray, actualHtml);
     });
 
-    it('Should translate Object objects', function() {
+    // it('Should translate JSON Object objects', function() {
+    //     var jsonObject = JSON.parse("{\"testKey\": \"testValue\"}");
+    //
+    //     var htmlObject =
+    //         "<div class=\"collapser\"></div>" +
+    //         "{" +
+    //             "<span class=\"ellipsis\"></span>" +
+    //             "<ul class=\"obj collapsible\">" +
+    //                 "<li>" +
+    //                     "<div class=\"hoverable\">" +
+    //                         "<span class=\"property\">testKey</span>: " +
+    //                         "<span class=\"type-string\">\"testValue\"</span>" +
+    //                     "</div>" +
+    //                 "</li>" +
+    //             "</ul>" +
+    //         "}"
+    //
+    //     var actualHtml  = window.valueToHTML(jsonObject).replace(/(&quot\;)/g,"\"");
+    //
+    //     assert.equal(htmlObject, actualHtml);
+    // });
+
+    it('Should translate JSON Object objects to YAML Objects', function() {
         var jsonObject = JSON.parse("{\"testKey\": \"testValue\"}");
 
         var htmlObject =
             "<div class=\"collapser\"></div>" +
-            "[" +
-                "<span class=\"ellipsis\"></span>" +
-                "<ul class=\"obj collapsible\">" +
-                    "<li>" +
-                        "<div class=\"hoverable\">" +
-                            "<span class=\"property\">testKey</span>: " +
-                            "<span class=\"type-string\">\"testValue\"</span>" +
-                        "</div>" +
-                    "</li>" +
-                "</ul>" +
-            "]"
+            "<span class=\"ellipsis\"></span>" +
+            "<ul class=\"obj collapsible\">" +
+            "<li>" +
+            "<div class=\"hoverable\">" +
+            "<span class=\"property\">testKey</span>: " +
+            "<span class=\"type-string\">\"testValue\"</span>" +
+            "</div>" +
+            "</li>" +
+            "</ul>"
 
-        var actualHtml  = window.valueToHTML(jsonObject).replace(/(&quot\;)/g,"\"").replace(/({)/g,"[").replace(/(})/g,"]");
+        var actualHtml  = window.valueToHTML(jsonObject).replace(/(&quot\;)/g,"\"");
 
         assert.equal(htmlObject, actualHtml);
     });
@@ -262,6 +282,7 @@ describe('WebWorker that formats html', function() {
 
         assert.equal(htmlString, actualHtml);
     });
+
 
 
 
