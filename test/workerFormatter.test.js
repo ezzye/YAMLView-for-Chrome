@@ -86,72 +86,64 @@ describe('WebWorker that formats html', function() {
         var html =
                 "<div id=\"json\">" +
                     "<div class=\"collapser\"></div>" +
-                    "[" +
                         "<span class=\"ellipsis\"></span>" +
                         "<ul class=\"obj collapsible\">" +
                             "<li>" +
-                                "<div class=\"hoverable\"><span class=\"property\">this</span>: <span class=\"type-string\">\"is\"</span>,</div>" +
+                                "<div class=\"hoverable\"><span class=\"property\">this</span>: <span class=\"type-string\">is</span>,</div>" +
                                     "</li>" +
                                     "<li>" +
                                     "<div class=\"hoverable\"><span class=\"property\">a</span>: " +
                                     "<div class=\"collapser\"></div>" +
-                                    "[" +
                                         "<span class=\"ellipsis\"></span>" +
                                         "<ul class=\"obj collapsible\">" +
                                             "<li>" +
-                                                "<div class=\"hoverable\"><span class=\"property\">0</span>: <span class=\"type-string\">\"YAML\"</span>," +
+                                                "<div class=\"hoverable\"><span class=\"property\">0</span>: <span class=\"type-string\">YAML</span>," +
                                                 "</div>" +
                                             "</li>" +
                                             "<li>" +
                                                 "<div class=\"hoverable\"><span class=\"property\">1</span>: <span " +
-                                                "class=\"type-string\">\"example\"</span></div>" +
+                                                "class=\"type-string\">example</span></div>" +
                                             "</li>" +
                                         "</ul>" +
-                                    "]" +
                                 "</div>" +
                             "</li>" +
                         "</ul>" +
-                    "]" +
-                "</div>"
+                "</div>";
 
-        var actualHtml  = window.jsonToHTML(jsonObject, fnName).replace(/(&quot\;)/g,"\"").replace(/({)/g,"[").replace(/(})/g,"]");
+        var actualHtml  = window.jsonToHTML(jsonObject, fnName);
 
         assert.equal(html, actualHtml);
     });
 
 
-    it('Should catagorise input and transform to html as appropriate', function() {
+    it('Should categorise input and transform to html as appropriate', function() {
         var jsonObject = JSON.parse(fs.readFileSync('fixture/example.json', 'utf-8'));
         var html =
             "<div class=\"collapser\"></div>" +
-            "[" +
                 "<span class=\"ellipsis\"></span>" +
                 "<ul class=\"obj collapsible\">" +
                     "<li>" +
-                        "<div class=\"hoverable\"><span class=\"property\">this</span>: <span class=\"type-string\">\"is\"</span>,</div>" +
+                        "<div class=\"hoverable\"><span class=\"property\">this</span>: <span class=\"type-string\">is</span>,</div>" +
                         "</li>" +
                         "<li>" +
                         "<div class=\"hoverable\"><span class=\"property\">a</span>: " +
                         "<div class=\"collapser\"></div>" +
-                        "[" +
                             "<span class=\"ellipsis\"></span>" +
                             "<ul class=\"obj collapsible\">" +
                                 "<li>" +
-                                    "<div class=\"hoverable\"><span class=\"property\">0</span>: <span class=\"type-string\">\"YAML\"</span>," +
+                                    "<div class=\"hoverable\"><span class=\"property\">0</span>: <span class=\"type-string\">YAML</span>," +
                                     "</div>" +
                                 "</li>" +
                                 "<li>" +
                                     "<div class=\"hoverable\"><span class=\"property\">1</span>: <span " +
-                                    "class=\"type-string\">\"example\"</span></div>" +
+                                    "class=\"type-string\">example</span></div>" +
                                 "</li>" +
                             "</ul>" +
-                        "]" +
                         "</div>" +
                     "</li>" +
-                "</ul>" +
-            "]";
+                "</ul>" ;
 
-        var actualHtml  = window.valueToHTML(jsonObject).replace(/(&quot\;)/g,"\"").replace(/({)/g,"[").replace(/(})/g,"]");
+        var actualHtml  = window.valueToHTML(jsonObject);
 
         assert.equal(html, actualHtml);
 
@@ -161,50 +153,27 @@ describe('WebWorker that formats html', function() {
         var jsonArray = JSON.parse("[\"testElement1\", \"testElement2\"]");
         var htmlArray =
         "<div class=\"collapser\"></div>" +
-        "[" +
             "<span class=\"ellipsis\"></span>" +
             "<ul class=\"obj collapsible\">" +
                 "<li>" +
                     "<div class=\"hoverable\">" +
                         "<span class=\"property\">0</span>: " +
-                        "<span class=\"type-string\">\"testElement1\"</span>," +
+                        "<span class=\"type-string\">testElement1</span>," +
                     "</div>" +
                 "</li>" +
                 "<li>" +
                     "<div class=\"hoverable\">" +
                         "<span class=\"property\">1</span>: " +
-                        "<span class=\"type-string\">\"testElement2\"</span>" +
+                        "<span class=\"type-string\">testElement2</span>" +
                     "</div>" +
                 "</li>" +
-            "</ul>" +
-        "]"
+            "</ul>";
 
-        var actualHtml  = window.valueToHTML(jsonArray).replace(/(&quot\;)/g,"\"").replace(/({)/g,"[").replace(/(})/g,"]");
+        var actualHtml  = window.valueToHTML(jsonArray);
 
         assert.equal(htmlArray, actualHtml);
     });
 
-    // it('Should translate JSON Object objects', function() {
-    //     var jsonObject = JSON.parse("{\"testKey\": \"testValue\"}");
-    //
-    //     var htmlObject =
-    //         "<div class=\"collapser\"></div>" +
-    //         "{" +
-    //             "<span class=\"ellipsis\"></span>" +
-    //             "<ul class=\"obj collapsible\">" +
-    //                 "<li>" +
-    //                     "<div class=\"hoverable\">" +
-    //                         "<span class=\"property\">testKey</span>: " +
-    //                         "<span class=\"type-string\">\"testValue\"</span>" +
-    //                     "</div>" +
-    //                 "</li>" +
-    //             "</ul>" +
-    //         "}"
-    //
-    //     var actualHtml  = window.valueToHTML(jsonObject).replace(/(&quot\;)/g,"\"");
-    //
-    //     assert.equal(htmlObject, actualHtml);
-    // });
 
     it('Should translate JSON Object objects to YAML Objects', function() {
         var jsonObject = JSON.parse("{\"testKey\": \"testValue\"}");
@@ -216,12 +185,12 @@ describe('WebWorker that formats html', function() {
             "<li>" +
             "<div class=\"hoverable\">" +
             "<span class=\"property\">testKey</span>: " +
-            "<span class=\"type-string\">\"testValue\"</span>" +
+            "<span class=\"type-string\">testValue</span>" +
             "</div>" +
             "</li>" +
             "</ul>"
 
-        var actualHtml  = window.valueToHTML(jsonObject).replace(/(&quot\;)/g,"\"");
+        var actualHtml  = window.valueToHTML(jsonObject);
 
         assert.equal(htmlObject, actualHtml);
     });
@@ -233,7 +202,7 @@ describe('WebWorker that formats html', function() {
 
         // var actualHtml  = window.decorateWithSpan(value, "type-number").replace(/(&quot\;)/g,"\"");
 
-        var actualHtml  = window.valueToHTML(value).replace(/(&quot\;)/g,"\"").replace(/({)/g,"[").replace(/(})/g,"]");
+        var actualHtml  = window.valueToHTML(value);
 
         assert.equal(htmlNumber, actualHtml);
     });
@@ -244,17 +213,17 @@ describe('WebWorker that formats html', function() {
         var htmlNumber = "<span class=\"type-null\"></span>";
 
 
-        var actualHtml  = window.valueToHTML(value).replace(/(&quot\;)/g,"\"").replace(/({)/g,"[").replace(/(})/g,"]");
+        var actualHtml  = window.valueToHTML(value);
 
         assert.equal(htmlNumber, actualHtml);
     });
 
-    it('Should decorate strings with span', function() {
+    it('Should decorate names with span to look like YAML', function() {
         var value = "test";
 
-        var htmlString = "<span class=\"type-string\">\"test\"</span>";
+        var htmlString = "<span class=\"type-string\">test</span>";
 
-        var actualHtml  = window.valueToHTML(value).replace(/(&quot\;)/g,"\"").replace(/({)/g,"[").replace(/(})/g,"]");
+        var actualHtml  = window.valueToHTML(value);
 
         assert.equal(htmlString, actualHtml);
     });
@@ -263,11 +232,12 @@ describe('WebWorker that formats html', function() {
         var value = "http://www.test.com/index.html";
 
         var htmlLink =
-            "<span class=\"type-string\">\"</span>" +
+            "<span class=\"type-string\"></span>" +
             "<a href=\"http://www.test.com/index.html\">http://www.test.com/index.html</a>" +
-            "<span class=\"type-string\">\"</span>";
+            "<span class=\"type-string\"></span>";
 
-        var actualHtml  = window.valueToHTML(value).replace(/(&quot\;)/g,"\"").replace(/({)/g,"[").replace(/(})/g,"]");
+        var actualHtml  = window.valueToHTML(value)
+            // .replace(/(&quot\;)/g,"\"").replace(/({)/g,"[").replace(/(})/g,"]");
 
         assert.equal(htmlLink, actualHtml);
     });

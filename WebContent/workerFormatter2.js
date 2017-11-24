@@ -24,9 +24,9 @@ function valueToHTML(value) {
         output += decorateWithSpan(value, "type-number");
     else if (valueType == "string")
         if (/^(http|https):\/\/[^\s]+$/.test(value))
-            output += decorateWithSpan('"', "type-string") + '<a href="' + value + '">' + htmlEncode(value) + '</a>' + decorateWithSpan('"', "type-string");
+            output += decorateWithSpan('', "type-string") + '<a href="' + value + '">' + htmlEncode(value) + '</a>' + decorateWithSpan('', "type-string");
         else
-            output += decorateWithSpan('"' + value + '"', "type-string");
+            output += decorateWithSpan(value, "type-string");
     else if (valueType == "boolean")
         output += decorateWithSpan(value, "type-boolean");
 
@@ -34,7 +34,7 @@ function valueToHTML(value) {
 }
 
 function arrayToHTML(json) {
-    var i, length, output = '<div class="collapser"></div>[<span class="ellipsis"></span><ul class="array collapsible">', hasContents = false;
+    var i, length, output = '<div class="collapser"></div><span class="ellipsis"></span><ul class="array collapsible">', hasContents = false;
     for (i = 0, length = json.length; i < length; i++) {
         hasContents = true;
         output += '<li><div class="hoverable">';
@@ -43,14 +43,14 @@ function arrayToHTML(json) {
             output += ',';
         output += '</div></li>';
     }
-    output += '</ul>]';
+    output += '</ul>';
     if (!hasContents)
-        output = "[ ]";
+        output = " ";
     return output;
 }
 
 function objectToHTML(json) {
-    var i, key, length, keys = Object.keys(json), output = '<div class="collapser"></div>{<span class="ellipsis"></span><ul class="obj collapsible">', hasContents = false;
+    var i, key, length, keys = Object.keys(json), output = '<div class="collapser"></div><span class="ellipsis"></span><ul class="obj collapsible">', hasContents = false;
     for (i = 0, length = keys.length; i < length; i++) {
         key = keys[i];
         hasContents = true;
@@ -61,9 +61,9 @@ function objectToHTML(json) {
             output += ',';
         output += '</div></li>';
     }
-    output += '</ul>}';
+    output += '</ul>';
     if (!hasContents)
-        output = "{ }";
+        output = " ";
     return output;
 }
 

@@ -1,0 +1,25 @@
+<div id="json">
+    <div class="collapser"></div>
+    <span class="ellipsis"></span>
+    <ul class="obj collapsible">
+        <li>
+            <div class="hoverable"><span class="property">this</span>: <span class="type-string">is</span>,</div>
+        </li>
+        <li>
+            <div class="hoverable"><span class="property">a</span>:
+                <div class="collapser"></div>
+                <span class="ellipsis"></span>
+                <ul class="obj collapsible">
+                    <li>
+                        <div class="hoverable"><span class="property">0</span>: <span class="type-string">YAML</span>,
+                        </div>
+                    </li>
+                    <li>
+                        <div class="hoverable"><span class="property">1</span>: <span class="type-string">example</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </li>
+    </ul>
+</div>
